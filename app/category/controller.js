@@ -69,9 +69,26 @@ const index = async (req, res, next) => {
   }
 };
 
+const indexById = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const category = await Categories.findById(id);
+    if (!category) {
+      return res.status(404).json({
+        message: `Category with id ${id} not found!`,
+      });
+    }
+    res.status(200).json({ message: `Category Found`, category });
+  } catch (err) {
+    res.status(500).json({ message: "Wrong ID!", error: err?.message });
+    next(err);
+  }
+};
+
 module.exports = {
   store,
   update,
   index,
   destroy,
+  indexById,
 };

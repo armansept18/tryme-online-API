@@ -69,9 +69,24 @@ const index = async (req, res, next) => {
   }
 };
 
+const indexById = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const tag = await Tags.findById(id);
+    if (!tag) {
+      return res.status(404).json({ message: `Tag with id ${id} not found!` });
+    }
+    res.status(200).json({ message: "Tag Found", tag });
+  } catch (err) {
+    res.status(500).json({ message: "Wrong ID!", error: err?.message });
+    next(err);
+  }
+};
+
 module.exports = {
   store,
   update,
   index,
   destroy,
+  indexById,
 };
