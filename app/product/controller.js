@@ -184,13 +184,41 @@ const update = async (req, res, next) => {
 
 const index = async (req, res, next) => {
   try {
-    let { skip = 0, limit = 10 } = req.query;
-    let product = await Product.find()
+    let { skip = 0, limit = 10, q = "", category = "", tags = "" } = req.query;
+
+    let criteria = {};
+    if (q.length) {
+      criteria = {
+        ...criteria,
+        name: { $regex: new RegExp(q, "i") },
+      };
+    }
+    if (category.length) {
+      let categoryResult = await Category.findOne({
+        name: { $regex: new RegExp(category, "i") },
+      });
+      if (categoryResult) {
+        criteria = { ...criteria, category: categoryResult._id };
+      }
+    }
+    if (tags.length) {
+      let tagsResult = await Tag.find({ name: { $in: tags } });
+      if (tagsResult.length > 0) {
+        criteria = {
+          ...criteria,
+          tags: { $in: tagsResult.map((tag) => tag._id) },
+        };
+      }
+    }
+
+    let count = await Product.find().countDocuments(criteria);
+
+    let product = await Product.find(criteria)
       .skip(parseInt(skip))
       .limit(parseInt(limit))
       .populate("category")
       .populate("tags");
-    return res.json(product);
+    return res.json({ data: product, count });
   } catch (err) {
     next(err);
   }
