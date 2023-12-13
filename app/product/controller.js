@@ -8,10 +8,10 @@ const Tag = require("../tag/model");
 
 const store = async (req, res, next) => {
   try {
-    let payload = req.body;
+    const payload = req.body;
 
     if (payload.category) {
-      let category = await Category.findOne({
+      const category = await Category.findOne({
         name: { $regex: payload.category, $options: "i" },
       });
       if (category) {
@@ -51,11 +51,11 @@ const store = async (req, res, next) => {
         try {
           let product = new Product({ ...payload, image_url: filename });
           await product.save();
-          return res.json(product);
+          return res.status(200).json(product);
         } catch (err) {
           fs.unlinkSync(target_path);
           if (err && err.name === "ValidationError") {
-            return res.json({
+            return res.status(500).json({
               error: 1,
               message: err.message,
               fields: err.errors,
@@ -69,13 +69,13 @@ const store = async (req, res, next) => {
         next(err);
       });
     } else {
-      let product = new Product(payload);
+      const product = new Product(payload);
       await product.save();
-      return res.json(product);
+      return res.status(200).json(product);
     }
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err.message,
         fields: err.errors,
@@ -87,8 +87,8 @@ const store = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    let payload = req.body;
-    let { id } = req.params;
+    const payload = req.body;
+    const { id } = req.params;
 
     if (payload.category) {
       let category = await Category.findOne({
@@ -100,7 +100,6 @@ const update = async (req, res, next) => {
         delete payload.category;
       }
     }
-    console.log("Before Tag:", payload);
     if (payload.tags && payload.tags.length > 0) {
       let tags = await Tag.find({
         name: { $in: payload.tags },
@@ -115,7 +114,6 @@ const update = async (req, res, next) => {
     } else {
       payload.tags = [];
     }
-    console.log("After Tag:", payload);
 
     if (req.file) {
       let tmp_path = req.file.path;
@@ -146,11 +144,11 @@ const update = async (req, res, next) => {
             new: true,
             runValidators: true,
           });
-          return res.json(product);
+          return res.status(200).json(product);
         } catch (err) {
           fs.unlinkSync(target_path);
           if (err && err.name === "ValidationError") {
-            return res.json({
+            return res.status(500).json({
               error: 1,
               message: err.message,
               fields: err.errors,
@@ -164,15 +162,15 @@ const update = async (req, res, next) => {
         next(err);
       });
     } else {
-      let product = await Product.findByIdAndUpdate(id, payload, {
+      const product = await Product.findByIdAndUpdate(id, payload, {
         new: true,
         runValidators: true,
       });
-      return res.json(product);
+      return res.status(200).json(product);
     }
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err.message,
         fields: err.errors,
@@ -211,14 +209,14 @@ const index = async (req, res, next) => {
       }
     }
 
-    let count = await Product.find().countDocuments(criteria);
+    const count = await Product.find().countDocuments(criteria);
 
-    let product = await Product.find(criteria)
+    const product = await Product.find(criteria)
       .skip(parseInt(skip))
       .limit(parseInt(limit))
       .populate("category")
       .populate("tags");
-    return res.json({ data: product, count });
+    return res.status(200).json({ data: product, count });
   } catch (err) {
     next(err);
   }
@@ -242,14 +240,14 @@ const indexId = async (req, res, next) => {
 
 const destroy = async (req, res, next) => {
   try {
-    let product = await Product.findOneAndDelete({ _id: req.params.id });
-    let currentImage = `${config.rootPath}/public/images/products/${product.image_url}`;
+    const product = await Product.findOneAndDelete({ _id: req.params.id });
+    const currentImage = `${config.rootPath}/public/images/products/${product.image_url}`;
 
     if (fs.existsSync(currentImage)) {
       fs.unlinkSync(currentImage);
     }
 
-    return res.json({ product, message: `Product Deleted!` });
+    return res.status(200).json({ product, message: `Product Deleted!` });
   } catch (err) {
     next(err);
   }

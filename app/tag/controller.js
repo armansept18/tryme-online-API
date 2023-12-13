@@ -5,10 +5,10 @@ const store = async (req, res, next) => {
     const payload = req.body;
     const tag = new Tags(payload);
     await tag.save();
-    return res.json(tag);
+    return res.status(200).json(tag);
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err?.message,
         fields: err?.errors,
@@ -19,16 +19,23 @@ const store = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
+  const { id } = req.params;
   try {
-    let payload = req.body;
-    let tag = await Tags.findByIdAndUpdate(req.params.id, payload, {
+    const payload = req.body;
+    const existingTag = await Tags.findById(id);
+    if (!existingTag) {
+      return res.status(404).json({
+        message: `Tag id ${id} not found!`,
+      });
+    }
+    const tag = await Tags.findByIdAndUpdate(req.params.id, payload, {
       new: true,
       runValidators: true,
     });
-    return res.json(tag);
+    return res.status(200).json(tag);
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err?.message,
         fields: err?.errors,
@@ -39,12 +46,19 @@ const update = async (req, res, next) => {
 };
 
 const destroy = async (req, res, next) => {
+  const { id } = req.params;
   try {
-    let tag = await Tags.findByIdAndDelete(req.params.id);
-    return res.json(tag);
+    const existingTag = await Tags.findById(id);
+    if (!existingTag) {
+      return res.status(404).json({
+        message: `Tag id ${id} not found!`,
+      });
+    }
+    const tag = await Tags.findByIdAndDelete(req.params.id);
+    return res.status(200).json(tag);
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err?.message,
         fields: err?.errors,
@@ -56,11 +70,11 @@ const destroy = async (req, res, next) => {
 
 const index = async (req, res, next) => {
   try {
-    let tag = await Tags.find();
-    return res.json(tag);
+    const tag = await Tags.find();
+    return res.status(200).json(tag);
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err?.message,
         fields: err?.errors,

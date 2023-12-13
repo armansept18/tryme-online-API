@@ -5,10 +5,10 @@ const store = async (req, res, next) => {
     const payload = req.body;
     const category = new Categories(payload);
     await category.save();
-    return res.json(category);
+    return res.status(200).json(category);
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err?.message,
         fields: err?.errors,
@@ -19,16 +19,27 @@ const store = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
+  const { id } = req.params;
   try {
-    let payload = req.body;
-    let category = await Categories.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
-      runValidators: true,
-    });
-    return res.json(category);
+    const payload = req.body;
+    const existingCategory = await Categories.findById(id);
+    if (!existingCategory) {
+      return res.status(404).json({
+        message: `Category id ${id} not found!`,
+      });
+    }
+    const category = await Categories.findByIdAndUpdate(
+      req.params.id,
+      payload,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    return res.status(200).json(category);
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err?.message,
         fields: err?.errors,
@@ -39,12 +50,19 @@ const update = async (req, res, next) => {
 };
 
 const destroy = async (req, res, next) => {
+  const { id } = req.params;
   try {
-    let category = await Categories.findByIdAndDelete(req.params.id);
-    return res.json(category);
+    const category = await Categories.findByIdAndDelete(req.params.id);
+    const existingCategory = await Categories.findById(id);
+    if (!existingCategory) {
+      return res.status(404).json({
+        message: `Category id ${id} not found!`,
+      });
+    }
+    return res.status(200).json(category);
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err?.message,
         fields: err?.errors,
@@ -56,11 +74,11 @@ const destroy = async (req, res, next) => {
 
 const index = async (req, res, next) => {
   try {
-    let category = await Categories.find();
-    return res.json(category);
+    const category = await Categories.find();
+    return res.status(200).json(category);
   } catch (err) {
     if (err && err.name === "ValidationError") {
-      return res.json({
+      return res.status(500).json({
         error: 1,
         message: err?.message,
         fields: err?.errors,
