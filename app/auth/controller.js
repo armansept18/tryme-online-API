@@ -19,7 +19,6 @@ const register = async (req, res, next) => {
       customer_id: nextCustomerId,
       password: await bcrypt.hash(payload.password, 10),
     });
-    // users.password = await bcrypt.hash(payload.password, 10);
     await users.save();
     return res
       .status(200)
