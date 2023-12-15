@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
+const { getToken } = require("../../utils");
 
 const register = async (req, res, next) => {
   try {
@@ -71,15 +72,48 @@ const login = async (req, res, next) => {
     await User.findByIdAndUpdate(user._id, { $push: { token: signIn } });
 
     res.status(200).json({
-      message: "Login Successfully",
+      message: "Login Success!",
       user,
       token: signIn,
     });
+  })(req, res, next);
+};
+
+const logout = async (req, res, next) => {
+  const token = getToken(req);
+
+  const user = await User.findOneAndUpdate(
+    { token: { $in: [token] } },
+    { $pull: { token: token } },
+    { useFindAndModify: false }
+  );
+
+  if (!token || !user) {
+    res.json({
+      error: 1,
+      message: "User Not Found!",
+    });
+  }
+  return res.json({
+    error: 0,
+    message: "Logout Success!",
   });
+};
+
+const check = async (req, res, next) => {
+  if (!req.user) {
+    res.json({
+      error: 1,
+      message: "You're Not Login or Token Expired",
+    });
+  }
+  res.json(req.user);
 };
 
 module.exports = {
   register,
   login,
   localStrategy,
+  logout,
+  check,
 };
