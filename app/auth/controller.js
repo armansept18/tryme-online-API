@@ -101,13 +101,22 @@ const logout = async (req, res, next) => {
 };
 
 const check = async (req, res, next) => {
-  if (!req.user) {
-    res.json({
-      error: 1,
-      message: "You're Not Login or Token Expired",
-    });
+  try {
+    if (!req.user) {
+      throw new Error("You're Not Logged in or Token Expired!");
+      // res.json({
+      //   error: 1,
+      //   message: "You're Not Login or Token Expired",
+      // });
+    }
+    res.json(req.user);
+  } catch (err) {
+    if (!res.headersSent) {
+      res.status(401).json({
+        message: err?.message || "Authentication Failed",
+      });
+    }
   }
-  res.json(req.user);
 };
 
 module.exports = {

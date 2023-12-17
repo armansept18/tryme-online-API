@@ -8,10 +8,10 @@ const Tag = require("../tag/model");
 
 const store = async (req, res, next) => {
   try {
-    const payload = req.body;
+    let payload = req.body;
 
     if (payload.category) {
-      const category = await Category.findOne({
+      let category = await Category.findOne({
         name: { $regex: payload.category, $options: "i" },
       });
       if (category) {
@@ -69,7 +69,7 @@ const store = async (req, res, next) => {
         next(err);
       });
     } else {
-      const product = new Product(payload);
+      let product = new Product(payload);
       await product.save();
       return res.status(200).json(product);
     }
@@ -87,8 +87,15 @@ const store = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const payload = req.body;
+    let payload = req.body;
     const { id } = req.params;
+    const existingProduct = await Product.findById(id);
+
+    if (!existingProduct) {
+      return res.status(404).json({
+        message: `Product with ID ${id} not found!`,
+      });
+    }
 
     if (payload.category) {
       let category = await Category.findOne({
