@@ -58,46 +58,78 @@ const localStrategy = async (email, password, done) => {
 };
 
 const login = async (req, res, next) => {
-  passport.authenticate("local", async function (err, user) {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      return res
-        .status(404)
-        .json({ error: 1, message: "Email or Password Incorrect!" });
-    }
-    const signIn = jwt.sign(user, config.secretkey);
+  try {
+    passport.authenticate("local", async function (err, user) {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res
+          .status(404)
+          .json({ error: 1, message: "Email or Password Incorrect!" });
+      }
+      await User.findByIdAndUpdate(user._id, { $set: { token: [] } });
+      const signIn = jwt.sign(user, config.secretkey, {
+        expiresIn: "5min",
+      });
+      await User.findByIdAndUpdate(user._id, { $push: { token: signIn } });
 
-    await User.findByIdAndUpdate(user._id, { $push: { token: signIn } });
-
-    res.status(200).json({
-      message: "Login Success!",
-      user,
-      token: signIn,
-    });
-  })(req, res, next);
+      res.status(200).json({
+        message: "Login Success!",
+        user,
+        token: signIn,
+      });
+    })(req, res, next);
+  } catch (err) {
+    if (err && err.name === "ValidationError") {
+      return res.status(500).json({
+        error: 1,
+        message: err?.message,
+        fields: err?.errors,
+      });
+    }
+  }
 };
 
 const logout = async (req, res, next) => {
   const token = getToken(req);
-
-  const user = await User.findOneAndUpdate(
-    { token: { $in: [token] } },
-    { $pull: { token: token } },
-    { useFindAndModify: false }
-  );
-
-  if (!token || !user) {
-    res.json({
-      error: 1,
-      message: "User Not Found!",
+  try {
+    if (!token) {
+      res.status(401).json({
+        error: 1,
+        message: `Token is missing request or need login first!`,
+      });
+    }
+    const user = await User.findOne({
+      email: req.user.email,
+      token: { $in: [token] },
     });
+    // const user = await User.findOneAndUpdate(
+    //   { token: { $in: [token] } },
+    //   { $pull: { token: token } },
+    //   { useFindAndModify: false }
+    // );
+    if (!user) {
+      res.status(404).json({
+        error: 1,
+        message: "User not found or invalid token!",
+      });
+    }
+    await User.findByIdAndUpdate(user._id, { $pull: { token: token } });
+    return res.status(200).json({
+      error: 0,
+      message: "Logout Success!",
+    });
+  } catch (err) {
+    if (err && err.name === "ValidationError") {
+      return res.status(500).json({
+        error: 1,
+        message: err?.message,
+        fields: err?.errors,
+      });
+    }
+    next(err);
   }
-  return res.json({
-    error: 0,
-    message: "Logout Success!",
-  });
 };
 
 const check = async (req, res, next) => {

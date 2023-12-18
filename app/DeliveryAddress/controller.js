@@ -56,14 +56,14 @@ const update = async (req, res, next) => {
 const destroy = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const address = await DeliveryAddress.findByIdAndDelete(req.params.id);
     const existingAddress = await DeliveryAddress.findById(id);
     if (!existingAddress) {
       return res.status(404).json({
         message: `Address id ${id} not found!`,
       });
     }
-    return res.status(200).json({ message: "Deleted successfully!", address });
+    const address = await DeliveryAddress.findByIdAndDelete(id);
+    return res.status(200).json({ message: "Deleted successfully!" });
   } catch (err) {
     if (err && err.name === "ValidationError") {
       return res.status(500).json({

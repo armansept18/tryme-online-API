@@ -38,7 +38,7 @@ function police_check(action, subject) {
   return function (req, res, next) {
     const policy = policyFor(req.user);
     if (!policy.can(action, subject)) {
-      return res.json({
+      return res.status(401).json({
         error: 1,
         message: `You're not allowed to ${action} ${subject}`,
       });
