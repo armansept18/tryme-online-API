@@ -2,8 +2,16 @@ const { police_check } = require("../../middlewares");
 const DeliveryAddressController = require("./controller");
 const router = require("express").Router();
 
-router.get("/delivery-addresses", DeliveryAddressController.index);
-router.get("/delivery-addresses/:id", DeliveryAddressController.indexId);
+router.get(
+  "/delivery-addresses",
+  police_check("view", "DeliveryAddress"),
+  DeliveryAddressController.index
+);
+router.get(
+  "/delivery-addresses/:id",
+  police_check("view", "DeliveryAddress"),
+  DeliveryAddressController.indexId
+);
 router.post(
   "/delivery-addresses",
   police_check("create", "DeliveryAddress"),
