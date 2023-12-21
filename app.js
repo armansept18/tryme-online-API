@@ -11,6 +11,8 @@ const tagRoute = require("./app/tag/router");
 const authRoute = require("./app/auth/router");
 const deliveryAddressRoute = require("./app/DeliveryAddress/router");
 const cartRoute = require("./app/cart/router");
+const orderRoute = require("./app/order/router");
+const invoiceRoute = require("./app/invoice/router");
 
 const app = express();
 
@@ -32,6 +34,8 @@ app.use("/api", categoryRoute);
 app.use("/api", tagRoute);
 app.use("/api", deliveryAddressRoute);
 app.use("/api", cartRoute);
+app.use("/api", orderRoute);
+app.use("/api", invoiceRoute);
 app.use("/static", express.static("public/images/products"));
 // Home
 app.use("/", function (req, res) {
