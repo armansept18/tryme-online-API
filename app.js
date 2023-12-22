@@ -4,15 +4,15 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
-const { decodeToken } = require("./middlewares");
-const productRoute = require("./app/product/router");
-const categoryRoute = require("./app/category/router");
-const tagRoute = require("./app/tag/router");
-const authRoute = require("./app/auth/router");
-const deliveryAddressRoute = require("./app/delivery-address/router");
-const cartRoute = require("./app/cart/router");
-const orderRoute = require("./app/order/router");
-const invoiceRoute = require("./app/invoice/router");
+const { decodeToken } = require("./src/middlewares/index");
+const productRoute = require("./src/routes/product");
+const categoryRoute = require("./src/routes/category");
+const tagRoute = require("./src/routes/tag");
+const authRoute = require("./src/routes/auth");
+const deliveryAddressRoute = require("./src/routes/delivery-address");
+const cartRoute = require("./src/routes/cart");
+const orderRoute = require("./src/routes/order");
+const invoiceRoute = require("./src/routes/invoice");
 
 const app = express();
 

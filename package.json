@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "SET DEBUG=pos-project:* && nodemon ./bin/www"
+    "start": "SET DEBUG=pos-project:* && nodemon ./src/bin/www"
   },
   "dependencies": {
     "@casl/ability": "^6.5.0",
