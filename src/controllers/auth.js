@@ -70,7 +70,7 @@ const login = async (req, res, next) => {
       }
       await User.findByIdAndUpdate(user._id, { $set: { token: [] } });
       const signIn = jwt.sign(user, config.secretkey, {
-        expiresIn: "5min",
+        expiresIn: "15min",
       });
       await User.findByIdAndUpdate(user._id, { $push: { token: signIn } });
 
@@ -150,6 +150,32 @@ const check = async (req, res, next) => {
     }
   }
 };
+const userIdCheck = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        error: 1,
+        message: `User with id ${id} not found!`,
+      });
+    }
+    return res.status(200).json({ message: "User Found", user });
+  } catch (err) {
+    res.status(500).json({ message: `Wrong ID!`, error: err?.message });
+    next(err);
+  }
+};
+const destroy = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndDelete({ _id: req.params.id });
+    return res.status(200).json({
+      message: "Deleted Successfully!",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   register,
@@ -157,4 +183,6 @@ module.exports = {
   localStrategy,
   logout,
   check,
+  userIdCheck,
+  destroy,
 };
