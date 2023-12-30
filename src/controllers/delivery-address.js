@@ -67,7 +67,7 @@ const destroy = async (req, res, next) => {
   let address = await DeliveryAddress.findById(id);
   const policy = policyFor(req.user);
   try {
-    if (!existingAddress) {
+    if (!address) {
       return res.status(404).json({
         message: `Address id ${id} not found!`,
       });

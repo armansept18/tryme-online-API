@@ -70,7 +70,7 @@ const login = async (req, res, next) => {
       }
       await User.findByIdAndUpdate(user._id, { $set: { token: [] } });
       const signIn = jwt.sign(user, config.secretkey, {
-        expiresIn: "15min",
+        expiresIn: "6h",
       });
       await User.findByIdAndUpdate(user._id, { $push: { token: signIn } });
 
@@ -104,11 +104,6 @@ const logout = async (req, res, next) => {
       email: req.user.email,
       token: { $in: [token] },
     });
-    // const user = await User.findOneAndUpdate(
-    //   { token: { $in: [token] } },
-    //   { $pull: { token: token } },
-    //   { useFindAndModify: false }
-    // );
     if (!user) {
       res.status(404).json({
         error: 1,
