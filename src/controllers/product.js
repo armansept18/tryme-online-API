@@ -10,6 +10,19 @@ const store = async (req, res, next) => {
   try {
     let payload = req.body;
 
+    if (payload.name) {
+      let existingProduct = await Product.findOne({
+        name: { $regex: payload.name, $options: "i" },
+      });
+
+      if (existingProduct) {
+        return res.status(409).json({
+          error: 1,
+          message: "Product with the same name already exists!",
+        });
+      }
+    }
+
     if (payload.category) {
       let category = await Category.findOne({
         name: { $regex: payload.category, $options: "i" },
@@ -37,7 +50,7 @@ const store = async (req, res, next) => {
           req.file.originalname.split(".").length - 1
         ];
       let filename =
-        `new-product_${moment().format("YYYYMMDDHHmmss")}` + "." + originalExt;
+        `new-product_${moment().format("YYYYMMDDHHmm")}` + "." + originalExt;
       let target_path = path.resolve(
         config.rootPath,
         `public/images/products/${filename}`
@@ -66,6 +79,7 @@ const store = async (req, res, next) => {
       });
 
       src.on("error", async () => {
+        fs.unlinkSync(target_path);
         next(err);
       });
     } else {
@@ -129,7 +143,7 @@ const update = async (req, res, next) => {
           req.file.originalname.split(".").length - 1
         ];
       let filename =
-        `new-product_${moment().format("YYYYMMDDHHmmss")}` + "." + originalExt;
+        `new-product_${moment().format("YYYYMMDDHHmm")}` + "." + originalExt;
       let target_path = path.resolve(
         config.rootPath,
         `public/images/products/${filename}`
@@ -189,13 +203,22 @@ const update = async (req, res, next) => {
 
 const index = async (req, res, next) => {
   try {
-    let { skip = 0, limit = 10, q = "", category = "", tags = "" } = req.query;
+    let {
+      page = 1,
+      limit = 5,
+      search = "",
+      category = "",
+      tags = "",
+    } = req.query;
+
+    page = parseInt(page);
+    limit = parseInt(limit);
 
     let criteria = {};
-    if (q.length) {
+    if (search.length) {
       criteria = {
         ...criteria,
-        name: { $regex: new RegExp(q, "i") },
+        name: { $regex: new RegExp(search, "i") },
       };
     }
     if (category.length) {
@@ -216,14 +239,22 @@ const index = async (req, res, next) => {
       }
     }
 
-    const count = await Product.find().countDocuments(criteria);
+    // const count = await Product.find().countDocuments(criteria);
+    const count = await Product.countDocuments(criteria);
+
+    const totalPages = Math.ceil(count / limit);
+    const currentPage = Math.max(1, Math.min(page, totalPages));
 
     const product = await Product.find(criteria)
-      .skip(parseInt(skip))
-      .limit(parseInt(limit))
+      // .skip(parseInt(page))
+      .sort({ createdAt: -1 })
+      .skip((currentPage - 1) * limit)
+      .limit(limit)
       .populate("category")
       .populate("tags");
-    return res.status(200).json({ data: product, count });
+    return res
+      .status(200)
+      .json({ data: product, count, totalPages, currentPage });
   } catch (err) {
     next(err);
   }

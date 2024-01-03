@@ -36,7 +36,7 @@ app.use("/api", deliveryAddressRoute);
 app.use("/api", cartRoute);
 app.use("/api", orderRoute);
 app.use("/api", invoiceRoute);
-app.use("/static", express.static("public/images/products"));
+app.use("/static", express.static(`${__dirname}/src/public/images/products`));
 // Home
 app.use("/", function (req, res) {
   res.render("index", {

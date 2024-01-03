@@ -3,8 +3,23 @@ const Categories = require("../models/category");
 const store = async (req, res, next) => {
   try {
     const payload = req.body;
+    // const category = new Categories(payload);
+    // await category.save();
+    // return res.status(200).json(category);
+    const existingCategory = await Categories.findOne({ name: payload.name });
+
+    if (existingCategory) {
+      return res.status(409).json({
+        error: 1,
+        message: "Category with the same name already exists!",
+        fields: { name: "Already exists!" },
+      });
+    }
+
+    // If the category doesn't exist, create and save it
     const category = new Categories(payload);
     await category.save();
+
     return res.status(200).json(category);
   } catch (err) {
     if (err && err.name === "ValidationError") {
@@ -59,7 +74,7 @@ const destroy = async (req, res, next) => {
         message: `Category id ${id} not found!`,
       });
     }
-    return res.status(200).json(category);
+    return res.status(200).json({ message: "Success delete category" });
   } catch (err) {
     if (err && err.name === "ValidationError") {
       return res.status(500).json({
