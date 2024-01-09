@@ -34,7 +34,9 @@ const update = async (req, res, next) => {
         };
       })
     );
-    return res.status(200).json(cartItems);
+    return res
+      .status(200)
+      .json({ message: "Products Added to Cart", cartItems });
   } catch (err) {
     if (err && err.name === "ValidationError") {
       return res.status(500).json({
@@ -64,7 +66,37 @@ const index = async (req, res, next) => {
     next(err);
   }
 };
+
+// const destroy = async (req, res, next) => {
+//   const { id } = req.params;
+//   try {
+//     const cartItem = await CartItem.findById(id);
+
+//     if (!cartItem) {
+//       return res.status(404).json({
+//         error: 1,
+//         message: `Cart item with ID ${id} not found!`,
+//       });
+//     }
+//     await CartItem.findByIdAndDelete(id);
+
+//     return res.status(200).json({
+//       message: "Cart item deleted successfully!",
+//     });
+//   } catch (err) {
+//     if (err && err.name === "ValidationError") {
+//       return res.status(500).json({
+//         error: 1,
+//         message: err.message,
+//         fields: err.errors,
+//       });
+//     }
+//     next(err);
+//   }
+// };
+
 module.exports = {
   update,
   index,
+  // destroy,
 };

@@ -4,5 +4,6 @@ const cartController = require("../controllers/cart");
 
 router.put("/carts", police_check("update", "Cart"), cartController.update);
 router.get("/carts", police_check("read", "Cart"), cartController.index);
+// router.delete("/carts/:id", cartController.destroy);
 
 module.exports = router;
