@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { dbHost, dbPass, dbName, dbPort, dbUser } = require("../utils/config");
 mongoose.connect(
   `mongodb://${dbUser}:${dbPass}@${dbHost}:${dbPort}/${dbName}?authSource=admin`
+  // `mongodb://${dbHost}:${dbPort}/${dbName}?authSource=admin`
 );
 const db = mongoose.connection;
 // db.on("open", () => {
